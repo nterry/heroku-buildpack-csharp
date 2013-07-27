@@ -1,7 +1,7 @@
 require_relative '../language_pack'
-require_relative 'base'
+require_relative 'mono'
 
-class LanguagePack::Mono2 < LanguagePack::Base
+class LanguagePack::Mono2 < LanguagePack::Mono
   MONO_BASE_URL        = 'https://s3.amazonaws.com/mono-bin'
   MONO_VERSION         = 'mono2/mono-2.10.8.1'
 
@@ -9,15 +9,8 @@ class LanguagePack::Mono2 < LanguagePack::Base
     false if Dir.glob('*.sln').empty?
     if File.exist? '.monoproperties'
       file = YAML.load_file('.monoproperties').to_sym
-      v = file[:runtime][:version].scan(/(\d+)\.?/)[0][0] == '2' if file[:runtime][:version]
-      puts ''
+      file[:runtime][:version].scan(/(\d+)\.?/)[0][0] == '2' if file[:runtime][:version]
     end
-  end
-
-  # name of the Language Pack
-  # @return [String] the result
-  def name
-    'C#'
   end
 
   # list of default addons to install
@@ -42,11 +35,5 @@ class LanguagePack::Mono2 < LanguagePack::Base
   # this is called to build the slug
   def compile
 
-  end
-
-  private
-
-  def install_mono
-    run("curl #{MONO_BASE_URL}/#{MONO_VERSION}.tgz -s -o - | tar xzf -")
   end
 end

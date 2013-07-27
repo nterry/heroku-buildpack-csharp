@@ -6,7 +6,7 @@ require 'digest/sha1'
 Encoding.default_external = Encoding::UTF_8 if defined?(Encoding)
 
 # abstract class that all the Ruby based Language Packs inherit from
-class LanguagePack::Base
+class LanguagePack::Mono
 
 
   VENDOR_URL = 'https://s3.amazonaws.com/heroku-buildpack-ruby'
@@ -31,7 +31,7 @@ class LanguagePack::Base
   # name of the Language Pack
   # @return [String] the result
   def name
-    raise 'must subclass'
+    'C#'
   end
 
   # list of default addons to install
@@ -55,6 +55,7 @@ class LanguagePack::Base
 
   # this is called to build the slug
   def compile
+    raise 'must subclass'
   end
 
   # collection of values passed for a release
@@ -206,6 +207,10 @@ class LanguagePack::Base
     return false unless File.exist?(from)
     FileUtils.mkdir_p File.dirname(to)
     system("cp -a #{from}/. #{to}")
+  end
+
+  def install_mono
+    run("curl #{MONO_BASE_URL}/#{MONO_VERSION}.tgz -s -o - | tar xzf -")
   end
 
 end

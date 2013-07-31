@@ -10,7 +10,7 @@ module Instrument
     out.send :flush
   end
 
-  def self.instrument(cat, title = "", *args)
+  def self.instrument(cat, title = '', *args)
     ret = nil
     start_time = DateTime.now.iso8601(6)
     duration = Benchmark.realtime do

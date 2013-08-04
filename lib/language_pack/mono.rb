@@ -39,7 +39,8 @@ class LanguagePack::Mono
 
 
   def default_config_vars
-    raise 'must subclass'
+    base_path = "/app/vendor/mono/#{self.class.to_s.split('::').last.downcase}"
+    { 'PATH' => "#{base_path}/bin", 'CPATH' => "#{base_path}/include", 'CPPPATH' => "#{base_path}/include" }
   end
 
 
@@ -129,12 +130,16 @@ class LanguagePack::Mono
     exit 1
   end
 
-  def warn
-
+  def warn(message)
+    message.split("\n").each do |line|
+      Kernel.puts " W:    #{line.strip}"
+    end
   end
 
-  def info
-    Kernel.puts
+  def info(message)
+    message.split("\n").each do |line|
+      Kernel.puts " I:    #{line.strip}"
+    end
   end
 
 
@@ -206,6 +211,10 @@ class LanguagePack::Mono
 
   def download_mono
     run("curl #{MONO_BASE_URL}/#{MONO_VERSION}.tgz -s -o - | tar xzf -")
+  end
+
+  def dot_monoproperties
+    YAML.load_file('.monoproperties').to_sym if File.exist? '.monoproperties'
   end
 
 end

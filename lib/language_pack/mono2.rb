@@ -21,8 +21,7 @@ class LanguagePack::Mono2 < LanguagePack::Mono
 
 
   def default_config_vars
-    include_path = '/app/vendor/mono/mono2/include'
-    { 'CPATH' => "#{include_path}", 'CPPPATH' => "#{include_path}" }
+    super.merge!({'PATH' => 'project_output_dir'}) { |key, oldval, newval| (key === 'PATH') ? "#{newval}:#{oldval}" : newval }
   end
 
 
@@ -35,8 +34,14 @@ class LanguagePack::Mono2 < LanguagePack::Mono
     Dir.chdir @build_path
     topic 'Begin compilation'
     log 'Compiling...' do
-      sln_files = Dir.glob('*.sln')
-      puts 'More than one Solution file found'
+      sln_files = if (not (dot_monoproperties)) then
+                    Dir.glob('*.sln')
+                  else
+                    (dot_monoproperties[:build][:sln] && File.exist?("#{dot_monoproperties[:build][:sln]}.sln")) ? %W(#{dot_monoproperties[:build][:sln]}.sln) : []
+                  end
+      error 'No solution files found' if sln_files.empty?
+      info "More than one Solution file found. Building #{sln_files.first} only. (Override this by specifying a sln file in '.monoproperties')" if sln_files.length > 1
+      info default_config_vars.to_s
     end
   end
 end

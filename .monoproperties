@@ -2,6 +2,15 @@ runtime:
   type: mono
   version: 2.10.8
   gc: sgen
-  environment:
-    test: test-value
-    test2: test2-value
+
+environment:
+  test: test-value
+  test2: test2-value
+
+build:
+  sln: foo
+  target: Release|AnyCPU
+
+deploy:
+  startup-project: ConsoleApplication1
+  start-command: mono ConsoleApplication1.exe $PORT

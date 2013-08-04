@@ -11,6 +11,7 @@ class LanguagePack::Mono2 < LanguagePack::Mono
       file = YAML.load_file('.monoproperties').to_sym
       file[:runtime][:version].scan(/(\d+)\.?/)[0][0] == '2' if file[:runtime][:version]
     end
+    true
   end
 
   # list of default addons to install
@@ -20,7 +21,8 @@ class LanguagePack::Mono2 < LanguagePack::Mono
 
 
   def default_config_vars
-    {}
+    include_path = '/app/vendor/mono/mono2/include'
+    { 'CPATH' => "#{include_path}", 'CPPPATH' => "#{include_path}" }
   end
 
 
@@ -30,6 +32,11 @@ class LanguagePack::Mono2 < LanguagePack::Mono
 
   # this is called to build the slug
   def compile
-
+    Dir.chdir @build_path
+    topic 'Begin compilation'
+    log 'Compiling...' do
+      sln_files = Dir.glob('*.sln')
+      puts 'More than one Solution file found'
+    end
   end
 end

@@ -74,11 +74,11 @@ class LanguagePack::Mono
       begin
         ret = yield
         finish = Time.now.to_f
-        log_internal args, :status => 'complete', :finish => finish, :elapsed => (finish - start)
+        logg args, :status => 'complete', :finish => finish, :elapsed => (finish - start)
         return ret
       rescue StandardError => ex
         finish = Time.now.to_f
-        log_internal args, :status => 'error', :finish => finish, :elapsed => (finish - start), :message => ex.message
+        logg args, :status => 'error', :finish => finish, :elapsed => (finish - start), :message => ex.message
         raise ex
       end
     end
@@ -88,6 +88,16 @@ class LanguagePack::Mono
 
   # sets up the environment variables for the build process
   def setup_language_pack_environment
+  end
+
+  def logg(*args)
+    log_console args
+    log_internal args
+  end
+
+  def log_console(*args)
+    message = build_log_message args
+    puts message
   end
 
 
@@ -117,6 +127,14 @@ class LanguagePack::Mono
     Kernel.puts ' !'
     log 'exit', :error => message
     exit 1
+  end
+
+  def warn
+
+  end
+
+  def info
+    Kernel.puts
   end
 
 

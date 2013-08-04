@@ -11,16 +11,17 @@ class LanguagePack::Mono3 < LanguagePack::Mono2
       file = YAML.load_file('.monoproperties').to_sym
       file[:runtime][:version].scan(/(\d+)\.?/)[0][0] == '3' if file[:runtime][:version]
     end
+    false
   end
 
-  # list of default addons to install
   def default_addons
     {}
   end
 
 
   def default_config_vars
-    {}
+    include_path = '/app/vendor/mono/mono3/include'
+    { 'CPATH' => "#{include_path}", 'CPPPATH' => "#{include_path}" }
   end
 
 

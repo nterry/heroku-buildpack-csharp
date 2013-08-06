@@ -2,6 +2,7 @@ require_relative '../language_pack'
 require 'pathname'
 require 'yaml'
 require 'digest/sha1'
+require 'iron-spect'
 
 Encoding.default_external = Encoding::UTF_8 if defined?(Encoding)
 
@@ -11,14 +12,14 @@ class LanguagePack::Mono
 
   VENDOR_URL = 'https://s3.amazonaws.com/heroku-buildpack-ruby'
 
-  attr_reader :build_path, :cache_path
+  attr_reader :build_path, :cache_path, :project_inspector
 
 
   def initialize(build_path, cache_path=nil)
     @build_path = build_path
     @cache_path = cache_path
     @id = Digest::SHA1.hexdigest("#{Time.now.to_f}-#{rand(1000000)}")[0..10]
-
+    @project_inspector = IronSpect::Inspecter.new(build_path)
     Dir.chdir build_path
   end
 
@@ -39,7 +40,8 @@ class LanguagePack::Mono
 
 
   def default_config_vars
-    raise 'must subclass'
+    base_path = "/app/vendor/mono/#{self.class.to_s.split('::').last.downcase}"
+    { 'PATH' => "#{base_path}/bin", 'CPATH' => "#{base_path}/include", 'CPPPATH' => "#{base_path}/include" }
   end
 
 
@@ -74,11 +76,11 @@ class LanguagePack::Mono
       begin
         ret = yield
         finish = Time.now.to_f
-        log_internal args, :status => 'complete', :finish => finish, :elapsed => (finish - start)
+        logg args, :status => 'complete', :finish => finish, :elapsed => (finish - start)
         return ret
       rescue StandardError => ex
         finish = Time.now.to_f
-        log_internal args, :status => 'error', :finish => finish, :elapsed => (finish - start), :message => ex.message
+        logg args, :status => 'error', :finish => finish, :elapsed => (finish - start), :message => ex.message
         raise ex
       end
     end
@@ -88,6 +90,16 @@ class LanguagePack::Mono
 
   # sets up the environment variables for the build process
   def setup_language_pack_environment
+  end
+
+  def logg(*args)
+    log_console args
+    log_internal args
+  end
+
+  def log_console(*args)
+    message = build_log_message args
+    puts message
   end
 
 
@@ -117,6 +129,18 @@ class LanguagePack::Mono
     Kernel.puts ' !'
     log 'exit', :error => message
     exit 1
+  end
+
+  def warn(message)
+    message.split("\n").each do |line|
+      Kernel.puts " W:    #{line.strip}"
+    end
+  end
+
+  def info(message)
+    message.split("\n").each do |line|
+      Kernel.puts " I:    #{line.strip}"
+    end
   end
 
 
@@ -188,6 +212,10 @@ class LanguagePack::Mono
 
   def download_mono
     run("curl #{MONO_BASE_URL}/#{MONO_VERSION}.tgz -s -o - | tar xzf -")
+  end
+
+  def dot_monoproperties
+    YAML.load_file('.monoproperties').to_sym if File.exist? '.monoproperties'
   end
 
 end
